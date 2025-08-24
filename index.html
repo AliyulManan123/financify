@@ -193,7 +193,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                         <h3 class="text-2xl font-semibold">Anggaran Bulanan</h3>
                          <div class="flex gap-2">
-                            <button id="auto-budget-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Anggaran Otomatis (AI)</button>
+                            <button id="auto-budget-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg text-sm">✨ Anggaran Otomatis</button>
                             <button id="add-budget-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm">+ Anggaran</button>
                         </div>
                     </div>
@@ -213,9 +213,9 @@
                 <div id="analysis" class="main-content">
                     <div class="flex justify-between items-center mb-6">
                          <h3 class="text-2xl font-semibold">Analisis Keuangan</h3>
-                         <button id="ask-ai-analyst-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">Tanya Analis AI</button>
+                         <button id="ask-ai-analyst-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">✨ Tanya Analis AI</button>
                     </div>
-                    <div id="ai-analyst-response" class="hidden bg-blue-100 dark:bg-blue-900/50 border-l-4 border-blue-500 text-blue-700 dark:text-blue-300 p-4 rounded-lg mb-6"></div>
+                    <div id="ai-analyst-response" class="hidden bg-blue-100 dark:bg-blue-900/50 border-l-4 border-blue-500 text-blue-700 dark:text-blue-300 p-4 rounded-lg mb-6 prose dark:prose-invert max-w-none"></div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
                             <h4 class="text-xl font-semibold mb-4">Tren Pengeluaran</h4>
@@ -273,7 +273,7 @@
                 <div class="mb-4">
                     <label for="transaction-description" class="block mb-2">Deskripsi</label>
                     <input type="text" id="transaction-description" name="description" class="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-700 dark:border-slate-600" required>
-                    <div id="ai-category-suggestion" class="mt-2 text-sm"></div>
+                    <div id="ai-category-suggestion" class="mt-2 text-sm h-5"></div>
                 </div>
                 <div class="mb-4">
                     <label for="transaction-amount" class="block mb-2">Jumlah</label>
@@ -602,11 +602,11 @@
                 goals: collection(db, 'users', user.uid, 'goals')
             };
             unsubscribeListeners.push(onSnapshot(refs.settings, (doc) => { userSettings = doc.exists() ? doc.data() : { currency: 'IDR' }; document.getElementById('currency-select').value = userSettings.currency; renderAll(); loadingSpinner.classList.add('hidden'); }));
-            unsubscribeListeners.push(onSnapshot(query(refs.accounts), (s) => { accounts = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
-            unsubscribeListeners.push(onSnapshot(query(refs.categories), (s) => { categories = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
+            unsubscribeListeners.push(onSnapshot(query(refs.accounts, orderBy("createdAt", "desc")), (s) => { accounts = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
+            unsubscribeListeners.push(onSnapshot(query(refs.categories, orderBy("createdAt", "desc")), (s) => { categories = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
             unsubscribeListeners.push(onSnapshot(query(refs.transactions, orderBy("date", "desc")), (s) => { transactions = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
-            unsubscribeListeners.push(onSnapshot(query(refs.budgets), (s) => { budgets = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
-            unsubscribeListeners.push(onSnapshot(query(refs.goals), (s) => { goals = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
+            unsubscribeListeners.push(onSnapshot(query(refs.budgets, orderBy("createdAt", "desc")), (s) => { budgets = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
+            unsubscribeListeners.push(onSnapshot(query(refs.goals, orderBy("createdAt", "desc")), (s) => { goals = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }));
             
             // --- FUNGSI RENDER ---
             function renderAll() {
@@ -636,16 +636,17 @@
                 let monthlyIncome = 0, monthlyExpenses = 0;
                 let totalGoalsSaved = goals.reduce((sum, goal) => sum + (goal.currentAmount || 0), 0);
                 transactions.forEach(t => {
-                    if (new Date(t.date) >= startOfMonth) {
+                    const transDate = new Date(t.date);
+                    if (transDate >= startOfMonth) {
                         if (t.type === 'income') monthlyIncome += t.amount;
                         if (t.type === 'expense') monthlyExpenses += t.amount;
                     }
                 });
                 document.getElementById('dashboard-cards').innerHTML = `
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Total Saldo</h4><p class="text-3xl font-bold text-green-500">${formatCurrency(totalBalance)}</p></div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Pemasukan Bulan Ini</h4><p class="text-3xl font-bold text-blue-500">${formatCurrency(monthlyIncome)}</p></div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Pengeluaran Bulan Ini</h4><p class="text-3xl font-bold text-red-500">${formatCurrency(monthlyExpenses)}</p></div>
-                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Total Tabungan</h4><p class="text-3xl font-bold text-yellow-500">${formatCurrency(totalGoalsSaved)}</p></div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Total Saldo</h4><p class="text-2xl md:text-3xl font-bold text-green-500 truncate">${formatCurrency(totalBalance)}</p></div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Pemasukan Bulan Ini</h4><p class="text-2xl md:text-3xl font-bold text-blue-500 truncate">${formatCurrency(monthlyIncome)}</p></div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Pengeluaran Bulan Ini</h4><p class="text-2xl md:text-3xl font-bold text-red-500 truncate">${formatCurrency(monthlyExpenses)}</p></div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"><h4 class="text-slate-500 dark:text-slate-400">Total Tabungan</h4><p class="text-2xl md:text-3xl font-bold text-yellow-500 truncate">${formatCurrency(totalGoalsSaved)}</p></div>
                 `;
                 document.getElementById('recent-transactions-list').innerHTML = transactions.slice(0, 5).map(t => {
                     const category = categories.find(c => c.id === t.categoryId) || {};
@@ -721,15 +722,140 @@
 
             // --- EVENT DELEGATION FOR EDIT/DELETE ---
             document.getElementById('app-container').addEventListener('click', async (e) => {
-                const target = e.target.closest('.delete-btn');
-                if (!target) return;
-                const type = target.dataset.type;
-                const id = target.dataset.id;
-                const confirmed = await showConfirmation('Konfirmasi Hapus', 'Yakin mau hapus item ini?');
-                if (confirmed) {
+                const deleteBtn = e.target.closest('.delete-btn');
+                const editBtn = e.target.closest('.edit-btn');
+
+                if (deleteBtn) {
+                    const type = deleteBtn.dataset.type;
+                    const id = deleteBtn.dataset.id;
+                    const confirmed = await showConfirmation('Konfirmasi Hapus', 'Yakin mau hapus item ini?');
+                    if (confirmed) {
+                        try {
+                            await deleteDoc(doc(db, 'users', user.uid, `${type}s`, id));
+                        } catch (err) { console.error(`Gagal hapus ${type}:`, err); }
+                    }
+                }
+
+                if (editBtn) {
+                    const type = editBtn.dataset.type;
+                    const id = editBtn.dataset.id;
+                    const data = { id, ...eval(type + 's').find(item => item.id === id) };
+                    openModal(`${type}-modal`, data);
+                }
+            });
+
+            // --- GEMINI API INTEGRATION ---
+            const callGeminiAPI = async (prompt, cleanMarkdown = true) => {
+                const apiKey = ""; // Leave blank, handled by the environment
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const result = await response.json();
+                    let text = result.candidates[0].content.parts[0].text;
+                    if (cleanMarkdown) {
+                        text = text.replace(/[*#]/g, '');
+                    }
+                    return text;
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    return null;
+                }
+            };
+
+            // 1. AI Category Suggestion
+            let suggestionTimeout;
+            document.getElementById('transaction-description').addEventListener('keyup', (e) => {
+                clearTimeout(suggestionTimeout);
+                const description = e.target.value;
+                const suggestionEl = document.getElementById('ai-category-suggestion');
+                if (description.length < 5) { suggestionEl.innerHTML = ''; return; }
+                suggestionTimeout = setTimeout(async () => {
+                    suggestionEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari kategori...';
+                    const categoryNames = categories.map(c => c.name).join(', ');
+                    const prompt = `Berdasarkan deskripsi transaksi "${description}", kategori pengeluaran mana yang paling cocok dari daftar ini: ${categoryNames}? Jawab hanya dengan nama kategorinya.`;
+                    const suggestedCategoryName = await callGeminiAPI(prompt);
+                    if (suggestedCategoryName) {
+                        const matchedCategory = categories.find(c => suggestedCategoryName.toLowerCase().includes(c.name.toLowerCase()));
+                        if (matchedCategory) {
+                            suggestionEl.innerHTML = `✨ Saran AI: <button type="button" class="text-indigo-500 font-semibold hover:underline" data-id="${matchedCategory.id}">${matchedCategory.name}</button>`;
+                        } else { suggestionEl.innerHTML = ''; }
+                    } else { suggestionEl.innerHTML = ''; }
+                }, 1000);
+            });
+
+            document.getElementById('ai-category-suggestion').addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    document.getElementById('transaction-category').value = e.target.dataset.id;
+                }
+            });
+
+            // 2. AI Financial Analyst
+            document.getElementById('ask-ai-analyst-btn').addEventListener('click', async () => {
+                const responseEl = document.getElementById('ai-analyst-response');
+                responseEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analis AI sedang menganalisis data Anda...';
+                responseEl.classList.remove('hidden');
+                const summary = `Total Saldo: ${formatCurrency(accounts.reduce((s, a) => s + a.balance, 0))}, Pemasukan Bulan Ini: ${formatCurrency(transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0))}, Pengeluaran Bulan Ini: ${formatCurrency(transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0))}, Tujuan: ${goals.map(g => `${g.name} (${formatCurrency(g.currentAmount)}/${formatCurrency(g.targetAmount)})`).join(', ')}`;
+                const prompt = `Anda adalah seorang analis keuangan yang ramah. Nama saya ${user.displayName || user.email}. Berdasarkan ringkasan keuangan saya, berikan beberapa wawasan dan saran. Gunakan format markdown sederhana (heading, list). Ringkasan: ${summary}`;
+                const analysis = await callGeminiAPI(prompt, false); // Jangan hapus markdown
+                responseEl.innerHTML = analysis || 'Maaf, terjadi kesalahan.';
+            });
+
+            // 3. Auto Budget AI
+            document.getElementById('auto-budget-btn').addEventListener('click', async () => {
+                const confirmed = await showConfirmation('Buat Anggaran Otomatis?', 'AI akan menganalisis pengeluaran 3 bulan terakhir Anda untuk membuat rekomendasi anggaran. Anggaran yang ada saat ini akan dihapus. Lanjutkan?');
+                if (!confirmed) return;
+                loadingSpinner.classList.remove('hidden');
+                const threeMonthsAgo = new Date();
+                threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+                const recentExpenses = transactions.filter(t => t.type === 'expense' && new Date(t.date) > threeMonthsAgo);
+                if (recentExpenses.length === 0) {
+                    alert("Tidak ada data pengeluaran yang cukup dalam 3 bulan terakhir untuk membuat anggaran otomatis.");
+                    loadingSpinner.classList.add('hidden');
+                    return;
+                }
+                const spendingSummary = recentExpenses.reduce((acc, t) => {
+                    const categoryName = categories.find(c => c.id === t.categoryId)?.name || 'Lainnya';
+                    acc[categoryName] = (acc[categoryName] || 0) + t.amount;
+                    return acc;
+                }, {});
+                const prompt = `Berdasarkan data pengeluaran ini: ${JSON.stringify(spendingSummary)}, buat rekomendasi anggaran bulanan. JAWAB HANYA DENGAN JSON ARRAY VALID dalam format [{"categoryName": "Nama Kategori", "budget": 1000000}]. JANGAN tambahkan teks, penjelasan, atau markdown.`;
+                const result = await callGeminiAPI(prompt, false);
+                try {
+                    let suggestedBudgets;
                     try {
-                        await deleteDoc(doc(db, 'users', user.uid, `${type}s`, id));
-                    } catch (err) { console.error(`Gagal hapus ${type}:`, err); }
+                        suggestedBudgets = JSON.parse(result);
+                    } catch (e) {
+                        console.log("Parsing JSON langsung gagal, mencoba ekstraksi...");
+                        const jsonMatch = result.match(/(\[.*\])/s);
+                        if (jsonMatch && jsonMatch[1]) {
+                            suggestedBudgets = JSON.parse(jsonMatch[1]);
+                        } else {
+                            throw new Error("Tidak dapat menemukan JSON yang valid dalam respons AI.");
+                        }
+                    }
+                    const batch = writeBatch(db);
+                    budgets.forEach(b => batch.delete(doc(refs.budgets, b.id)));
+                    suggestedBudgets.forEach(b => {
+                        const category = categories.find(c => c.name === b.categoryName);
+                        if(category) {
+                            batch.set(doc(collection(db, 'users', user.uid, 'budgets')), {
+                                categoryId: category.id,
+                                amount: b.budget,
+                                createdAt: serverTimestamp()
+                            });
+                        }
+                    });
+                    await batch.commit();
+                } catch (err) {
+                    console.error("Gagal membuat anggaran AI:", err, "Respons asli:", result);
+                    alert("Gagal memproses respons dari AI. Coba lagi.");
+                } finally {
+                    loadingSpinner.classList.add('hidden');
                 }
             });
         }
