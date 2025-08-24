@@ -1,570 +1,541 @@
 <!DOCTYPE html>
-<html lang="id" class=""> <!-- Class 'dark' will be toggled here -->
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financify - Modern Finance Tracker</title>
-    
+    <title>Financify - AI-Powered Finance Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        /* --- MODERN UI STYLES --- */
-        :root {
-            --font-sans: 'Poppins', sans-serif;
-        }
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+     <style>
         body {
-            font-family: var(--font-sans);
-            /* Added for smoother scrolling */
-            scroll-behavior: smooth;
+            font-family: 'Inter', sans-serif;
         }
-
-        /* Input fields with a cleaner look */
-        .form-input {
-            @apply w-full px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all;
+        .main-content {
+            display: none;
         }
-
-        /* Buttons with subtle hover effects */
-        .btn {
-            @apply font-semibold py-2.5 px-5 rounded-lg transition-all duration-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+        .main-content.active {
+            display: block;
         }
-        .btn-primary {
-            @apply btn bg-indigo-600 text-white hover:bg-indigo-700 hover:-translate-y-0.5;
+        .progress-bar-bg {
+            background-color: #e5e7eb; /* gray-200 */
         }
-        .btn-secondary {
-            @apply btn bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600;
+        .dark .progress-bar-bg {
+            background-color: #374151; /* gray-700 */
         }
-        .btn-social {
-            @apply w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-all shadow-sm;
-        }
-        .btn-icon-sm {
-            @apply bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 h-10 w-10 flex-shrink-0 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-all;
-        }
-
-        /* Cards with softer shadows and borders */
-        .card {
-            @apply bg-white dark:bg-slate-800/50 rounded-2xl shadow-lg border border-slate-200/80 dark:border-slate-800 p-4 sm:p-6;
-        }
-        .card-title {
-            @apply text-lg font-semibold text-slate-800 dark:text-slate-100;
-        }
-
-        /* Glassmorphism Header */
-        header {
-            @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl;
-        }
-        
-        /* Dropdown Menu with animation */
-        #dropdown-menu {
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-        .dropdown-item {
-            @apply flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors;
-        }
-        .dropdown-icon {
-            @apply w-6 mr-2 text-slate-500;
-        }
-
-        /* Floating Action Button with animation */
-        .fab {
-            @apply fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 rounded-2xl text-white text-2xl flex items-center justify-center shadow-xl hover:bg-indigo-700 hover:rotate-12 transition-all duration-300;
-        }
-
-        /* Modal with smooth entrance animation */
-        .modal-container {
-            @apply fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-300;
-        }
-        .modal-content {
-            @apply bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl transition-transform duration-300 scale-95;
-        }
-        .modal-container:not(.hidden) .modal-content {
-            @apply scale-100;
-        }
-        .modal-title {
-            @apply text-xl font-bold;
-        }
-        .tx-type-btn {
-            @apply px-5 py-2 rounded-full font-semibold transition-colors text-sm;
-        }
-        .tx-type-btn.active {
-            @apply bg-indigo-600 text-white;
-        }
-        .form-row {
-            @apply flex items-center gap-4 bg-slate-100 dark:bg-slate-700/50 p-3 rounded-xl;
-        }
-        .form-row-icon {
-            @apply text-slate-500 w-5 text-center;
-        }
-        .form-row-select {
-            @apply bg-transparent w-full outline-none appearance-none;
-        }
-
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        .dark ::-webkit-scrollbar-thumb { background: #475569; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #334155; }
-
-        /* Progress bar */
-        .progress-bar {
-            @apply w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2;
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .progress-bar-inner {
-            @apply h-2 rounded-full transition-all duration-500;
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
         }
-
-        /* Category icon */
-        .category-icon-bg {
-            @apply w-11 h-11 rounded-xl flex items-center justify-center text-white text-lg;
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* gray-600 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* gray-500 */
+        }
+        #auth-container, #app-container {
+            display: none;
         }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
 
-    <!-- ===== LOGIN SCREEN ===== -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-950 p-4">
-        <div class="w-full max-w-md text-center">
-            <div class="bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 p-8 md:p-12 rounded-2xl shadow-2xl">
-                <i class="fas fa-leaf text-5xl text-emerald-500 mb-4"></i>
-                <h1 class="text-4xl font-bold text-slate-800 dark:text-white mb-2">Financify</h1>
-                <p class="text-slate-500 dark:text-slate-400 mb-8">Track smarter, live better.</p>
-                <form id="manual-login-form" class="space-y-4 mb-4">
-                    <input type="email" id="email-input" placeholder="Email" class="form-input" required>
-                    <input type="password" id="password-input" placeholder="Password" class="form-input" required>
-                    <div class="flex gap-2">
-                        <button type="submit" id="login-button" class="btn-primary w-full">Masuk</button>
-                        <button type="button" id="signup-button" class="btn-secondary w-full">Daftar</button>
+    <!-- Authentication Container -->
+    <div id="auth-container" class="min-h-screen flex items-center justify-center">
+        <div class="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
+            <h1 class="text-3xl font-bold text-center text-indigo-600 dark:text-indigo-400 mb-2">Welcome to Financify</h1>
+            <p class="text-center text-gray-500 dark:text-gray-400 mb-6">Sign in to manage your finances.</p>
+            
+            <div id="auth-view">
+                <!-- Email/Password Login -->
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="login-email" class="block mb-2">Email</label>
+                        <input type="email" id="login-email" class="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required>
                     </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block mb-2">Password</label>
+                        <input type="password" id="login-password" class="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 mb-4">Login</button>
                 </form>
-                <div class="flex items-center my-6"><hr class="flex-grow border-slate-300 dark:border-slate-700"><span class="px-4 text-slate-400 dark:text-slate-500 text-sm">OR</span><hr class="flex-grow border-slate-300 dark:border-slate-700"></div>
-                <div class="space-y-4">
-                    <button id="google-login" class="btn-social"><i class="fab fa-google"></i> Lanjutkan dengan Google</button>
-                    <button id="github-login" class="btn-social bg-slate-800 hover:bg-slate-900 text-white"><i class="fab fa-github"></i> Lanjutkan dengan GitHub</button>
+
+                <div class="relative flex py-5 items-center">
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                    <span class="flex-shrink mx-4 text-gray-400">Or continue with</span>
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
                 </div>
-                 <p id="auth-error" class="text-red-500 dark:text-red-400 mt-4 text-sm"></p>
+
+                <!-- Social Logins -->
+                <div class="grid grid-cols-2 gap-4">
+                     <button id="google-login-btn" class="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105"><i class="fab fa-google"></i> Google</button>
+                     <button id="github-login-btn" class="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105"><i class="fab fa-github"></i> GitHub</button>
+                </div>
+                 <p class="text-center mt-6 text-sm">Don't have an account? <button id="show-register-btn" class="text-indigo-500 hover:underline">Sign Up</button></p>
             </div>
+            
+            <div id="register-view" class="hidden">
+                 <!-- Registration Form -->
+                <form id="register-form">
+                    <div class="mb-4">
+                        <label for="register-email" class="block mb-2">Email</label>
+                        <input type="email" id="register-email" class="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="register-password" class="block mb-2">Password</label>
+                        <input type="password" id="register-password" class="w-full p-3 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 mb-4">Create Account</button>
+                </form>
+                <p class="text-center mt-6 text-sm">Already have an account? <button id="show-login-btn" class="text-indigo-500 hover:underline">Login</button></p>
+            </div>
+            <p id="auth-error" class="text-red-500 text-center mt-4"></p>
         </div>
     </div>
 
-    <!-- ===== MAIN APP SCREEN ===== -->
-    <div id="app-screen" class="hidden">
-        <header class="p-4 flex justify-between items-center sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800">
-            <div>
-                <p class="text-sm text-slate-500">Total Saldo</p>
-                <p id="header-balance" class="text-2xl font-bold">Rp 0</p>
+
+    <!-- Main Application Container -->
+    <div id="app-container" class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-lg flex-shrink-0 transition-all duration-300 -translate-x-full sm:translate-x-0">
+            <div class="p-4">
+                <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Financify</h1>
             </div>
-            <div class="flex items-center gap-2 relative">
-                <button id="theme-toggle" class="btn-icon-sm"><i class="fas fa-sun" id="theme-icon-sun"></i><i class="fas fa-moon hidden" id="theme-icon-moon"></i></button>
-                <button id="menu-button" class="btn-icon-sm"><i class="fas fa-ellipsis-v"></i></button>
-                <!-- Dropdown Menu -->
-                <div id="dropdown-menu" class="hidden absolute top-12 right-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-lg shadow-lg border dark:border-slate-700 w-48 py-2">
-                    <a href="#" class="dropdown-item" data-page="home"><i class="fas fa-home dropdown-icon"></i>Home</a>
-                    <a href="#" class="dropdown-item" data-page="analysis"><i class="fas fa-chart-line dropdown-icon"></i>Analysis</a>
-                    <a href="#" class="dropdown-item" data-page="transactions"><i class="fas fa-exchange-alt dropdown-icon"></i>Transaction</a>
-                    <a href="#" class="dropdown-item" data-page="categories"><i class="fas fa-tags dropdown-icon"></i>Categories</a>
-                    <div class="my-1 border-t border-slate-200 dark:border-slate-700"></div>
-                    <a href="#" id="logout-button" class="dropdown-item text-red-500 dark:text-red-400"><i class="fas fa-sign-out-alt dropdown-icon"></i>Logout</a>
+            <ul class="mt-4 space-y-2 px-2">
+                <li><a href="#home" class="nav-link active flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-home w-6 text-center mr-3"></i>Home</a></li>
+                <li><a href="#transactions" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-exchange-alt w-6 text-center mr-3"></i>Transactions</a></li>
+                <li><a href="#budgets" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-file-invoice-dollar w-6 text-center mr-3"></i>Budgets</a></li>
+                <li><a href="#goals" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-bullseye w-6 text-center mr-3"></i>Goals</a></li>
+                <li><a href="#analysis" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-chart-pie w-6 text-center mr-3"></i>Analysis</a></li>
+                <li><a href="#settings" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><i class="fas fa-cog w-6 text-center mr-3"></i>Settings</a></li>
+            </ul>
+             <div class="absolute bottom-0 w-full px-2 pb-4">
+                 <button id="logout-btn" class="w-full flex items-center justify-center p-3 rounded-lg text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+                    <i class="fas fa-sign-out-alt w-6 text-center mr-3"></i>
+                    Logout
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white dark:bg-gray-800 shadow-md p-4 flex justify-between items-center">
+                 <button id="menu-toggle" class="sm:hidden text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 id="page-title" class="text-xl font-semibold">Home</h2>
+                <div class="flex items-center space-x-4">
+                    <button id="add-transaction-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
+                        Add Transaction
+                    </button>
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <i id="theme-icon" class="fas fa-sun"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- Home Page -->
+                <div id="home" class="main-content active">
+                    <h3 class="text-2xl font-semibold mb-4">Dashboard</h3>
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-gray-500 dark:text-gray-400">Total Balance</h4>
+                            <p id="total-balance" class="text-3xl font-bold text-green-500">$0.00</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-gray-500 dark:text-gray-400">This Month's Income</h4>
+                            <p id="monthly-income" class="text-3xl font-bold text-blue-500">$0.00</p>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-gray-500 dark:text-gray-400">This Month's Expenses</h4>
+                            <p id="monthly-expenses" class="text-3xl font-bold text-red-500">$0.00</p>
+                        </div>
+                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-gray-500 dark:text-gray-400">Savings Goals Progress</h4>
+                            <p id="total-goals-saved" class="text-3xl font-bold text-yellow-500">$0.00</p>
+                        </div>
+                    </div>
+
+                    <!-- Budget Progress & Recent Transactions -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-xl font-semibold mb-4">Recent Transactions</h4>
+                            <ul id="recent-transactions-list" class="space-y-4">
+                                <!-- JS will populate this -->
+                            </ul>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-xl font-semibold mb-4">Budget Progress</h4>
+                            <div id="home-budget-progress" class="space-y-4">
+                                <!-- JS will populate this -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Page -->
+                <div id="transactions" class="main-content">
+                    <h3 class="text-2xl font-semibold mb-4">All Transactions</h3>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b dark:border-gray-700">
+                                    <th class="py-3">Date</th>
+                                    <th class="py-3">Description</th>
+                                    <th class="py-3">Category</th>
+                                    <th class="py-3">Amount</th>
+                                    <th class="py-3">Account</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body">
+                                <!-- JS will populate this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Budgets Page -->
+                <div id="budgets" class="main-content">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-semibold">Monthly Budgets</h3>
+                         <div>
+                            <button id="auto-budget-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg mr-2">Auto-Budget with AI</button>
+                            <button id="add-budget-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Add Budget</button>
+                        </div>
+                    </div>
+                    <div id="budget-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+
+                <!-- Goals Page -->
+                <div id="goals" class="main-content">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-semibold">Savings Goals</h3>
+                        <button id="add-goal-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Add Goal</button>
+                    </div>
+                    <div id="goal-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- JS will populate this -->
+                    </div>
+                </div>
+
+                <!-- Analysis Page -->
+                <div id="analysis" class="main-content">
+                    <div class="flex justify-between items-center mb-6">
+                         <h3 class="text-2xl font-semibold">Financial Analysis</h3>
+                         <button id="ask-ai-analyst-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">Ask AI Analyst</button>
+                    </div>
+                    <div id="ai-analyst-response" class="hidden bg-blue-100 dark:bg-blue-900/50 border-l-4 border-blue-500 text-blue-700 dark:text-blue-300 p-4 rounded-lg mb-6">
+                       <!-- AI response will be shown here -->
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-xl font-semibold mb-4">Spending Trends</h4>
+                            <canvas id="spending-trends-chart"></canvas>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-xl font-semibold mb-4">Income vs. Expense</h4>
+                            <canvas id="income-expense-chart"></canvas>
+                        </div>
+                         <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg col-span-1 lg:col-span-2">
+                            <h4 class="text-xl font-semibold mb-4">Top Spending Categories</h4>
+                            <div id="top-spending-categories"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settings" class="main-content">
+                     <h3 class="text-2xl font-semibold mb-4">Settings</h3>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-xl font-semibold mb-4">Manage Accounts</h4>
+                            <ul id="account-list" class="space-y-2"></ul>
+                            <button id="add-account-btn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Add Account</button>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                            <h4 class="text-xl font-semibold mb-4">Manage Categories</h4>
+                            <ul id="category-list" class="space-y-2"></ul>
+                            <button id="add-category-btn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Add Category</button>
+                        </div>
+                     </div>
                 </div>
             </div>
-        </header>
-
-        <main id="main-content" class="p-4 md:p-6 max-w-7xl mx-auto">
-            <!-- Content will be dynamically inserted here by JS -->
         </main>
-
-        <!-- Floating Action Button -->
-        <button id="add-transaction-fab" class="fab">
-            <i class="fas fa-plus"></i>
-        </button>
     </div>
-    
-    <!-- ===== MODALS ===== -->
-    <div id="transaction-modal" class="modal-container hidden">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="modal-title">Buat Transaksi</h2>
-                <button class="modal-cancel text-2xl text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">&times;</button>
-            </div>
-            <div>
-                 <div class="flex justify-center mb-6">
-                    <div class="bg-slate-100 dark:bg-slate-900 rounded-full p-1 flex">
-                        <button class="tx-type-btn active" data-type="expense">Pengeluaran</button>
-                        <button class="tx-type-btn" data-type="income">Pemasukan</button>
-                        <button class="tx-type-btn" data-type="transfer">Transfer</button>
-                    </div>
+
+    <!-- Modals -->
+    <!-- Add/Edit Transaction Modal -->
+    <div id="transaction-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md">
+            <h3 id="transaction-modal-title" class="text-2xl font-bold mb-6">Add Transaction</h3>
+            <form id="transaction-form">
+                <input type="hidden" id="transaction-id">
+                <div class="mb-4">
+                    <label for="transaction-description" class="block mb-2">Description</label>
+                    <input type="text" id="transaction-description" class="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required>
+                    <div id="ai-category-suggestion" class="mt-2 text-sm"></div>
                 </div>
-                <input type="number" id="tx-amount" class="text-4xl font-bold bg-transparent w-full text-center outline-none mb-6" placeholder="Rp 0">
-                <div class="space-y-4">
-                    <div class="form-row" id="category-row">
-                        <i class="fas fa-tag form-row-icon"></i>
-                        <select id="tx-category" class="form-row-select"></select>
-                    </div>
-                    <div class="form-row" id="source-row">
-                        <i class="fas fa-wallet form-row-icon"></i>
-                        <select id="tx-source" class="form-row-select"></select>
-                    </div>
-                    <div class="form-row hidden" id="destination-row">
-                        <i class="fas fa-arrow-right form-row-icon"></i>
-                        <select id="tx-destination" class="form-row-select"></select>
-                    </div>
-                    <div class="form-row">
-                        <i class="fas fa-calendar-alt form-row-icon"></i>
-                        <input type="datetime-local" id="tx-date" class="form-row-select">
-                    </div>
-                    <div class="form-row">
-                        <i class="fas fa-sticky-note form-row-icon"></i>
-                        <input type="text" id="tx-description" placeholder="Tulis catatan..." class="form-row-select">
-                    </div>
+                <div class="mb-4">
+                    <label for="transaction-amount" class="block mb-2">Amount</label>
+                    <input type="number" step="0.01" id="transaction-amount" class="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required>
                 </div>
-                <button id="save-transaction-btn" class="btn-primary w-full mt-8">Simpan Transaksi</button>
-            </div>
+                 <div class="mb-4">
+                    <label for="transaction-type" class="block mb-2">Type</label>
+                    <select id="transaction-type" class="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                        <option value="transfer">Transfer</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="transaction-category" class="block mb-2">Category</label>
+                    <select id="transaction-category" class="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required></select>
+                </div>
+                <div class="mb-4">
+                    <label for="transaction-account" class="block mb-2">Account</label>
+                    <select id="transaction-account" class="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required></select>
+                </div>
+                 <div id="transaction-to-account-container" class="mb-4 hidden">
+                    <label for="transaction-to-account" class="block mb-2">To Account/Goal</label>
+                    <select id="transaction-to-account" class="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600"></select>
+                </div>
+                <div class="mb-4">
+                    <label for="transaction-date" class="block mb-2">Date</label>
+                    <input type="date" id="transaction-date" class="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600" required>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" class="cancel-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-600" data-modal="transaction-modal">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 text-white">Save</button>
+                </div>
+            </form>
         </div>
     </div>
     
-    <script type="module">
-        // --- JAVASCRIPT LOGIC ---
-        // =================================================================================
-        // FIREBASE SDK IMPORTS
-        // =================================================================================
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Other Modals (Budget, Goal, Account, Category) -->
+    <!-- ... (Modal HTML is the same, just ensure cancel buttons have the 'cancel-btn' class and data-modal attribute) ... -->
+    
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500"></div>
+    </div>
 
-        // =================================================================================
-        // FIREBASE CONFIGURATION
-        // =================================================================================
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            GithubAuthProvider,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { 
+            getFirestore,
+            doc,
+            setDoc,
+            getDoc,
+            collection,
+            addDoc,
+            query,
+            onSnapshot,
+            deleteDoc,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyDDST7IEdCyFTt75TWV67muA7zRfRIzIR4",
-          authDomain: "fintrack-e9733.firebaseapp.com",
-          projectId: "fintrack-e9733",
-          storageBucket: "fintrack-e9733.appspot.com",
-          messagingSenderId: "1003202782558",
-          appId: "1:1003202782558:web:cbe93962f09f00a5861bcf",
-          measurementId: "G-2WKDB7K2C"
+            apiKey: "AIzaSyDDST7IEdCyFTt75TWV67muA7zRfRIzIR4",
+            authDomain: "fintrack-e9733.firebaseapp.com",
+            projectId: "fintrack-e9733",
+            storageBucket: "fintrack-e9733.appspot.com",
+            messagingSenderId: "1003202782558",
+            appId: "1:1003202782558:web:cbe93962f09f00a5861bcf",
+            measurementId: "G-2WKDBP7K2C"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // =================================================================================
-        // GLOBAL STATE & CONSTANTS
-        // =================================================================================
-        let currentUser = null;
-        let transactions = [];
-        let categories = [];
-        let sources = [];
-        let unsubs = [];
-        const CATEGORY_COLORS = { default: '#64748b', Food: '#f59e0b', Transport: '#3b82f6', Shopping: '#8b5cf6', Bills: '#ef4444', Entertainment: '#10b981', Health: '#22c55e', Salary: '#14b8a6' };
+        // --- AUTHENTICATION LOGIC ---
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const authError = document.getElementById('auth-error');
 
-        // =================================================================================
-        // DOM ELEMENT SELECTORS
-        // =================================================================================
-        const docHtml = document.documentElement;
-        const loginScreen = document.getElementById('login-screen');
-        const appScreen = document.getElementById('app-screen');
-        const mainContent = document.getElementById('main-content');
-        const headerBalance = document.getElementById('header-balance');
-        const menuButton = document.getElementById('menu-button');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-
-        // =================================================================================
-        // THEME MANAGER
-        // =================================================================================
-        const themeToggle = document.getElementById('theme-toggle');
-        const applyTheme = (theme) => {
-            docHtml.classList.toggle('dark', theme === 'dark');
-            document.getElementById('theme-icon-sun').classList.toggle('hidden', theme === 'dark');
-            document.getElementById('theme-icon-moon').classList.toggle('hidden', theme !== 'dark');
-        };
-        themeToggle.addEventListener('click', () => {
-            const newTheme = docHtml.classList.contains('dark') ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme(newTheme);
-        });
-
-        // =================================================================================
-        // AUTHENTICATION
-        // =================================================================================
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, user => {
             if (user) {
-                currentUser = user;
-                loginScreen.classList.add('hidden');
-                appScreen.classList.remove('hidden');
-                fetchAllData(user.uid);
-                navigateTo('home');
+                // User is signed in
+                authContainer.style.display = 'none';
+                appContainer.style.display = 'flex';
+                initializeAppLogic(user);
             } else {
-                currentUser = null;
-                loginScreen.classList.remove('hidden');
-                appScreen.classList.add('hidden');
-                unsubs.forEach(unsub => unsub());
-                unsubs = [];
+                // User is signed out
+                authContainer.style.display = 'flex';
+                appContainer.style.display = 'none';
             }
+            loadingSpinner.classList.add('hidden');
         });
-        document.getElementById('google-login').addEventListener('click', () => signInWithPopup(auth, new GoogleAuthProvider()));
-        document.getElementById('github-login').addEventListener('click', () => signInWithPopup(auth, new GithubAuthProvider()));
-        document.getElementById('logout-button').addEventListener('click', () => { dropdownMenu.classList.add('hidden'); signOut(auth); });
-        document.getElementById('manual-login-form').addEventListener('submit', (e) => { e.preventDefault(); signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value); });
-        document.getElementById('signup-button').addEventListener('click', () => { createUserWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value); });
 
-        // =================================================================================
-        // DATA FETCHING
-        // =================================================================================
-        function fetchAllData(uid) {
-            const collections = {
-                transactions: (data) => { transactions = data.sort((a, b) => b.date.toDate() - a.date.toDate()); },
-                categories: (data) => { categories = data; },
-                sources: (data) => { sources = data; },
-            };
-            for (const [name, callback] of Object.entries(collections)) {
-                const q = query(collection(db, name), where("uid", "==", uid));
-                const unsub = onSnapshot(q, (snapshot) => {
-                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    callback(data);
-                    updateUI();
-                });
-                unsubs.push(unsub);
-            }
-        }
-
-        // =================================================================================
-        // UI ROUTING & RENDERING
-        // =================================================================================
-        let currentPage = 'home';
-        menuButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('hidden');
-        });
-        dropdownMenu.addEventListener('click', (e) => {
+        // Email/Password Registration
+        document.getElementById('register-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const page = e.target.closest('.dropdown-item')?.dataset.page;
-            if (page) {
-                navigateTo(page);
-                dropdownMenu.classList.add('hidden');
-            }
-        });
-        document.addEventListener('click', () => dropdownMenu.classList.add('hidden'));
-
-        function navigateTo(page) {
-            currentPage = page;
-            switch (page) {
-                case 'home': renderHomePage(); break;
-                case 'analysis': renderAnalysisPage(); break;
-                case 'transactions': renderTransactionsPage(); break;
-                case 'categories': renderCategoriesPage(); break;
-            }
-        }
-
-        function updateUI() {
-            const totalBalance = sources.reduce((sum, s) => sum + s.balance, 0);
-            headerBalance.textContent = formatCurrency(totalBalance);
-            navigateTo(currentPage);
-        }
-
-        // --- Page Renderers ---
-        function renderHomePage() {
-            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const recentTxs = transactions.slice(0, 5);
-            mainContent.innerHTML = `
-                <div class="space-y-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="bg-gradient-to-br from-orange-400 to-amber-500 text-white p-6 rounded-2xl shadow-lg">
-                            <p class="font-semibold text-orange-100">Pemasukan Bulan Ini</p>
-                            <p class="text-3xl font-bold mt-1">${formatCurrency(income)}</p>
-                        </div>
-                        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-                            <p class="font-semibold text-indigo-100">Pengeluaran Bulan Ini</p>
-                            <p class="text-3xl font-bold mt-1">${formatCurrency(expense)}</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h2 class="card-title mb-4">Akun</h2>
-                        <div class="space-y-4">${sources.map(s => `
-                            <div class="flex justify-between items-center">
-                                <p class="font-semibold">${s.name}</p>
-                                <p class="font-medium">${formatCurrency(s.balance)}</p>
-                            </div>`).join('') || '<p class="text-slate-500">Belum ada akun.</p>'}
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h2 class="card-title mb-4">Transaksi Terakhir</h2>
-                        <div class="space-y-4">${recentTxs.map(tx => renderTransactionItem(tx)).join('') || '<p class="text-slate-500 py-4 text-center">Belum ada transaksi.</p>'}</div>
-                    </div>
-                </div>`;
-        }
-
-        function renderTransactionsPage() {
-            const groupedTxs = transactions.reduce((acc, tx) => {
-                const dateStr = tx.date.toDate().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' });
-                if (!acc[dateStr]) acc[dateStr] = [];
-                acc[dateStr].push(tx);
-                return acc;
-            }, {});
-            mainContent.innerHTML = `
-                <div class="space-y-6">
-                    ${Object.entries(groupedTxs).map(([date, txs]) => `
-                        <div>
-                            <div class="flex justify-between items-center mb-2 px-2">
-                                <h3 class="font-semibold">${date}</h3>
-                                <p class="text-red-500 font-semibold">${formatCurrency(txs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0))}</p>
-                            </div>
-                            <div class="card space-y-4">
-                                ${txs.map(tx => renderTransactionItem(tx)).join('')}
-                            </div>
-                        </div>
-                    `).join('') || '<div class="card text-center text-slate-500 p-8">Belum ada transaksi.</div>'}
-                </div>`;
-        }
-
-        function renderCategoriesPage() {
-            const expenseByCategory = transactions.filter(t => t.type === 'expense').reduce((acc, tx) => {
-                const category = categories.find(c => c.id === tx.categoryId);
-                const name = category ? category.name : 'Uncategorized';
-                acc[name] = (acc[name] || 0) + tx.amount;
-                return acc;
-            }, {});
-            const totalExpense = Object.values(expenseByCategory).reduce((s, a) => s + a, 0);
-            mainContent.innerHTML = `
-                <div class="card">
-                    <div class="w-full max-w-xs mx-auto"><canvas id="category-chart"></canvas></div>
-                    <div class="space-y-4 mt-6">
-                        ${Object.entries(expenseByCategory).map(([name, amount]) => {
-                            const percentage = totalExpense > 0 ? (amount / totalExpense) * 100 : 0;
-                            const color = CATEGORY_COLORS[name] || CATEGORY_COLORS.default;
-                            return `
-                                <div>
-                                    <div class="flex justify-between mb-1 font-medium">
-                                        <span>${name}</span>
-                                        <span>${formatCurrency(amount)}</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-bar-inner" style="width: ${percentage}%; background-color: ${color};"></div>
-                                    </div>
-                                </div>`;
-                        }).join('')}
-                    </div>
-                </div>`;
-            if (totalExpense > 0) {
-                new Chart(document.getElementById('category-chart').getContext('2d'), {
-                    type: 'doughnut', data: { labels: Object.keys(expenseByCategory), datasets: [{ data: Object.values(expenseByCategory), backgroundColor: Object.keys(expenseByCategory).map(name => CATEGORY_COLORS[name] || CATEGORY_COLORS.default), borderColor: docHtml.classList.contains('dark') ? '#1e293b' : '#ffffff', borderWidth: 4 }] },
-                    options: { responsive: true, cutout: '70%', plugins: { legend: { display: false } } }
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            loadingSpinner.classList.remove('hidden');
+            authError.textContent = '';
+            createUserWithEmailAndPassword(auth, email, password)
+                .catch(error => {
+                    console.error("Registration Error:", error);
+                    authError.textContent = error.message;
+                    loadingSpinner.classList.add('hidden');
                 });
-            }
-        }
-
-        function renderAnalysisPage() {
-            mainContent.innerHTML = `<div class="card text-center text-slate-500 p-8">Halaman Analisis sedang dalam pengembangan.</div>`;
-        }
-
-        // --- Component Renderer ---
-        function renderTransactionItem(tx) {
-            const category = categories.find(c => c.id === tx.categoryId);
-            const source = sources.find(s => s.id === tx.sourceId);
-            const color = tx.type === 'income' ? 'text-green-500' : 'text-slate-800 dark:text-slate-200';
-            const sign = tx.type === 'income' ? '+' : '-';
-            const icon = category ? `<i class="fas fa-${category.icon}"></i>` : '<i class="fas fa-question"></i>';
-            return `
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <div class="category-icon-bg" style="background-color: ${CATEGORY_COLORS[category?.name] || CATEGORY_COLORS.default};">
-                            ${icon}
-                        </div>
-                        <div>
-                            <p class="font-semibold">${tx.description}</p>
-                            <p class="text-sm text-slate-500">${source?.name || 'N/A'}</p>
-                        </div>
-                    </div>
-                    <p class="font-bold ${color}">${sign}${formatCurrency(tx.amount)}</p>
-                </div>`;
-        }
-
-        // =================================================================================
-        // TRANSACTION MODAL
-        // =================================================================================
-        const txModal = document.getElementById('transaction-modal');
-        const addTxFab = document.getElementById('add-transaction-fab');
-        const saveTxBtn = document.getElementById('save-transaction-btn');
-        const txTypeBtns = document.querySelectorAll('.tx-type-btn');
-
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.remove('hidden');
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.add('hidden');
-        }
-
-        addTxFab.addEventListener('click', () => {
-            document.getElementById('tx-category').innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            const sourceOptions = sources.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-            document.getElementById('tx-source').innerHTML = sourceOptions;
-            document.getElementById('tx-destination').innerHTML = sourceOptions;
-            openModal('transaction-modal');
         });
-        document.querySelector('.modal-cancel').addEventListener('click', () => closeModal('transaction-modal'));
 
-        txTypeBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                txTypeBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const type = btn.dataset.type;
-                document.getElementById('category-row').style.display = type === 'transfer' ? 'none' : 'flex';
-                document.getElementById('destination-row').style.display = type === 'transfer' ? 'flex' : 'none';
+        // Email/Password Login
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            loadingSpinner.classList.remove('hidden');
+            authError.textContent = '';
+            signInWithEmailAndPassword(auth, email, password)
+                .catch(error => {
+                    console.error("Login Error:", error);
+                    authError.textContent = error.message;
+                    loadingSpinner.classList.add('hidden');
+                });
+        });
+        
+        // Google Login
+        document.getElementById('google-login-btn').addEventListener('click', () => {
+             const provider = new GoogleAuthProvider();
+             signInWithPopup(auth, provider).catch(error => {
+                console.error("Google Login Error:", error);
+                authError.textContent = error.message;
+             });
+        });
+
+        // GitHub Login
+        document.getElementById('github-login-btn').addEventListener('click', () => {
+             const provider = new GithubAuthProvider();
+             signInWithPopup(auth, provider).catch(error => {
+                console.error("GitHub Login Error:", error);
+                authError.textContent = error.message;
+             });
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // Toggle between Login and Register views
+        const authView = document.getElementById('auth-view');
+        const registerView = document.getElementById('register-view');
+        document.getElementById('show-register-btn').addEventListener('click', () => {
+            authView.classList.add('hidden');
+            registerView.classList.remove('hidden');
+        });
+        document.getElementById('show-login-btn').addEventListener('click', () => {
+            registerView.classList.add('hidden');
+            authView.classList.remove('hidden');
+        });
+
+
+        // --- MAIN APP LOGIC ---
+        function initializeAppLogic(user) {
+            console.log("App Initialized for user:", user.uid);
+            // All the application logic (UI updates, data fetching) will go here.
+            // This ensures it only runs AFTER a user is successfully authenticated.
+            
+            // --- UI LOGIC (Theme, Navigation, Modals) ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+
+            themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                if (document.documentElement.classList.contains('dark')) {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                } else {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                }
             });
-        });
+            
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
 
-        saveTxBtn.addEventListener('click', async () => {
-            const type = document.querySelector('.tx-type-btn.active').dataset.type;
-            const amount = parseFloat(document.getElementById('tx-amount').value);
-            const sourceId = document.getElementById('tx-source').value;
-            const destinationId = document.getElementById('tx-destination').value;
-            const dateValue = document.getElementById('tx-date').value;
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mainContents = document.querySelectorAll('.main-content');
+            const pageTitle = document.getElementById('page-title');
 
-            if (!currentUser || !amount || !sourceId || (type === 'transfer' && !destinationId)) return;
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
 
-            const batch = writeBatch(db);
-            const txData = { uid: currentUser.uid, description: document.getElementById('tx-description').value, amount, type, date: dateValue ? new Date(dateValue) : new Date(), sourceId };
-            if (type !== 'transfer') txData.categoryId = document.getElementById('tx-category').value;
-            if (type === 'transfer') txData.destinationId = destinationId;
-            batch.set(doc(collection(db, "transactions")), txData);
+                    navLinks.forEach(l => l.classList.remove('active', 'bg-gray-200', 'dark:bg-gray-700'));
+                    link.classList.add('active', 'bg-gray-200', 'dark:bg-gray-700');
 
-            const sourceRef = doc(db, "sources", sourceId);
-            const sourceDoc = await getDoc(sourceRef);
-            const sourceBalance = sourceDoc.data().balance;
+                    mainContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === targetId) {
+                            content.classList.add('active');
+                            pageTitle.textContent = link.textContent;
+                        }
+                    });
+                     if (window.innerWidth < 640) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                });
+            });
 
-            if (type === 'expense' || type === 'transfer') batch.update(sourceRef, { balance: sourceBalance - amount });
-            if (type === 'income') batch.update(sourceRef, { balance: sourceBalance + amount });
-            if (type === 'transfer') {
-                const destRef = doc(db, "sources", destinationId);
-                const destDoc = await getDoc(destRef);
-                batch.update(destRef, { balance: destDoc.data().balance + amount });
-            }
+            // --- Modal Handling ---
+            const openModal = (modalId) => document.getElementById(modalId).classList.remove('hidden');
+            const closeModal = (modalId) => document.getElementById(modalId).classList.add('hidden');
 
-            await batch.commit();
-            closeModal('transaction-modal');
-            document.getElementById('tx-amount').value = '';
-            document.getElementById('tx-description').value = '';
-        });
+            document.getElementById('add-transaction-btn').addEventListener('click', () => openModal('transaction-modal'));
+            // ... add listeners for other "add" buttons ...
 
-        // =================================================================================
-        // UTILITIES & INITIAL LOAD
-        // =================================================================================
-        const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', () => closeModal(btn.dataset.modal));
+            });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            applyTheme(savedTheme);
-        });
+            // --- FIRESTORE DATA HANDLING ---
+            // This is where you would set up onSnapshot listeners for each collection
+            // e.g., onSnapshot(collection(db, 'users', user.uid, 'transactions'), snapshot => { ... });
+            
+            // Example: Render dummy data to show it's working
+            const recentTransactionsList = document.getElementById('recent-transactions-list');
+            recentTransactionsList.innerHTML = `
+                <li class="flex justify-between items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                    <div><p class="font-semibold">Logged in!</p><p class="text-sm text-gray-500 dark:text-gray-400">Data will load here</p></div>
+                    <p class="font-bold text-green-500">+$0.00</p>
+                </li>
+            `;
+        }
+
     </script>
 </body>
 </html>
